@@ -15,7 +15,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            border-top: 5px solid #001F54; /* biru navy */
+            border-top: 5px solid  #FFF9E5; /* biru navy */
         }
         h2 {
             text-align: center;
@@ -61,6 +61,15 @@
         .hasil strong {
             color: #001F54;
         }
+        /* Tambahkan style untuk pesan error */
+        .error {
+            color: #B00020;
+            background-color: #FEEEEE;
+            border: 1px solid #B00020;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -68,28 +77,48 @@
 <div class="container">
     <h2>Prediksi Harga Rumah Balikpapan</h2>
 
+    {# Tampilkan Pesan Error #}
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
     <form action="/predict" method="post">
         <label>Kamar Tidur</label>
-        <input type="number" name="kamar_tidur" placeholder="Masukkan jumlah kamar tidur" required>
+        {# Tambahkan value untuk sticky form #}
+        <input type="number" name="kamar_tidur" placeholder="Masukkan jumlah kamar tidur" required
+               value="{{ kamar_tidur if kamar_tidur is not none }}">
 
         <label>Kamar Mandi</label>
-        <input type="number" name="kamar_mandi" placeholder="Masukkan jumlah kamar mandi" required>
+        {# Tambahkan value untuk sticky form #}
+        <input type="number" name="kamar_mandi" placeholder="Masukkan jumlah kamar mandi" required
+               value="{{ kamar_mandi if kamar_mandi is not none }}">
 
         <label>Luas Tanah (m²)</label>
-        <input type="number" name="luas_tanah" placeholder="Masukkan luas tanah" required>
+        {# Tambahkan value untuk sticky form #}
+        <input type="number" name="luas_tanah" placeholder="Masukkan luas tanah" required
+               value="{{ luas_tanah if luas_tanah is not none }}">
 
         <label>Luas Bangunan (m²)</label>
-        <input type="number" name="luas_bangunan" placeholder="Masukkan luas bangunan" required>
+        {# Tambahkan value untuk sticky form #}
+        <input type="number" name="luas_bangunan" placeholder="Masukkan luas bangunan" required
+               value="{{ luas_bangunan if luas_bangunan is not none }}">
 
         <label>Kecamatan</label>
         <select name="kecamatan" required>
             <option value="">Pilih Kecamatan</option>
-            <option value="Balikpapan Barat">Balikpapan Barat</option>
-            <option value="Balikpapan Kota">Balikpapan Kota</option>
-            <option value="Balikpapan Selatan">Balikpapan Selatan</option>
-            <option value="Balikpapan Tengah">Balikpapan Tengah</option>
-            <option value="Balikpapan Timur">Balikpapan Timur</option>
-            <option value="Balikpapan Utara">Balikpapan Utara</option>
+            
+            {# Ganti opsi hardcoded dengan loop dinamis #}
+            {% for item in kecamatan_list %}
+                <option value="{{ item }}" {% if item == kecamatan %}selected{% endif %}>{{ item }}</option>
+            {% endfor %}
+            
+            {# Tambahkan Balikpapan Barat (karena ada di select lama Anda) 
+               meskipun tidak ada di data training, agar UI tidak pecah. 
+               app.py akan mengabaikannya (dummy = 0) #}
+            {% if 'Balikpapan Barat' not in kecamatan_list %}
+                <option value="Balikpapan Barat" {% if 'Balikpapan Barat' == kecamatan %}selected{% endif %}>Balikpapan Barat</option>
+            {% endif %}
+
         </select>
 
         <button type="submit">Prediksi</button>
@@ -103,7 +132,11 @@
         <p>Luas tanah: <strong>{{ luas_tanah }} m²</strong></p>
         <p>Luas bangunan: <strong>{{ luas_bangunan }} m²</strong></p>
         <p>Lokasi: <strong>{{ kecamatan }}</strong></p>
-        <p><strong>Estimasi Harga:</strong> {{ range_harga }}</p>
+        
+        {# Tampilkan prediksi tengah #}
+        <p>Prediksi Harga Tengah: <strong>{{ prediksi_tengah }}</strong></p>
+        
+        <p><strong>Rentang Estimasi Harga:</strong> {{ range_harga }}</p>
     </div>
     {% endif %}
 </div>
