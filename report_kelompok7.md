@@ -1575,57 +1575,63 @@ Cell 15: Fungsi joblib.dump() digunakan dua kali: pertama, untuk menyimpan objek
 ```
 
 Penjelasan:
-1. Struktur HTML
-Menggunakan <!DOCTYPE html> untuk HTML5, dengan tag <html lang="id"> agar bahasa halaman dikenali sebagai Bahasa Indonesia, serta pemisahan standar <head> dan <body>.
+## Penjelasan Antarmuka Pengguna (`templates/index.html`)
 
-2. Head 
-Tag <meta charset="UTF-8"> memastikan karakter Indonesia tampil dengan benar, dan <title> digunakan sebagai judul tab browser “Prediksi Harga Rumah Balikpapan”.
+File `index.html` berfungsi sebagai antarmuka depan (*frontend*) aplikasi yang memungkinkan pengguna memasukkan data properti. Berikut adalah rincian elemen-elemen penyusunnya:
 
-3. CSS (Style Internal)
-Blok <style> mengatur tampilan halaman dengan tema kuning pastel dan biru navy, meliputi:
-Warna latar belakang halaman (body)
-Desain card .container (shadow, radius, dan border)
-Styling judul, label, input, select, dan button
-Efek hover pada tombol
+**1. Struktur Dasar HTML**
+Menggunakan deklarasi `<!DOCTYPE html>` untuk standar HTML5, dengan tag pembuka `<html lang="id">` agar mesin peramban mengenali konten halaman sebagai Bahasa Indonesia. Dokumen dibagi menjadi dua bagian utama: `<head>` (metadata & style) dan `<body>` (konten visual).
 
-4. Container Utama (.container)
-Elemen utama berbentuk card di tengah halaman yang menampung seluruh komponen: judul aplikasi, pesan error, form input, dan hasil prediksi.
+**2. Metadata Head**
+Tag `<meta charset="UTF-8">` digunakan untuk memastikan encoding karakter (termasuk simbol mata uang) tampil dengan benar. Bagian `<title>` menetapkan judul tab browser menjadi "Prediksi Harga Rumah Balikpapan".
 
-5. Judul Halaman
-<h2> menampilkan judul “Prediksi Harga Rumah Balikpapan” dengan warna biru navy untuk menegaskan identitas aplikasi.
+**3. Styling CSS (Internal Style)**
+Blok `<style>` mendefinisikan tema visual aplikasi dengan nuansa warna Kuning Pastel (`#FFF9E5`, `#FFD966`) dan Biru Navy (`#001F54`). CSS mengatur:
+* **Body**: Font family dan warna latar belakang.
+* **Container**: Desain kartu dengan efek bayangan (*box-shadow*), sudut melengkung (*border-radius*), dan garis aksen atas.
+* **Komponen UI**: Styling konsisten untuk judul, label, input form, tombol, dan kotak hasil prediksi.
 
-6. Blok Pesan Error (Jinja2)
-{% if error %} digunakan untuk menampilkan pesan kesalahan dari backend (misalnya input tidak valid), sehingga pengguna mendapat umpan balik langsung tanpa berpindah halaman.
+**4. Container Utama (`.container`)**
+Elemen `<div>` dengan kelas `container` berfungsi sebagai pembungkus utama konten. Elemen ini menampung judul aplikasi, notifikasi error, formulir input, dan hasil prediksi di tengah layar.
 
-7. Form Prediksi
-<form action="/predict" method="post"> berfungsi mengirim data input pengguna ke backend Flask melalui endpoint /predict menggunakan metode POST.
+**5. Judul Halaman**
+Tag `<h2>` menampilkan judul "Prediksi Harga Rumah Balikpapan" dengan warna teks biru navy untuk memberikan identitas visual yang tegas pada aplikasi.
 
-8. Input Fitur Numerik
-Field <input type="number"> untuk:
-Jumlah kamar tidur
-Jumlah kamar mandi
-Luas tanah
-Luas Bangunan
+**6. Penanganan Pesan Error (Jinja2)**
+Blok logika Jinja2 `{% if error %}` digunakan untuk mendeteksi keberadaan variabel `error` yang dikirim dari backend. Jika error ada (misalnya input di luar batas wajar), pesan akan ditampilkan dalam kotak merah (`.error`) untuk memberi umpan balik instan kepada pengguna.
 
-9. Luas bangunan
-Seluruh field bersifat required dan dilengkapi placeholder serta value dari Jinja2 agar form bersifat sticky (data tidak hilang saat error).
+**7. Form Prediksi**
+Tag `<form action="/predict" method="post">` mendefinisikan area formulir. Atribut `action="/predict"` mengarahkan data ke endpoint Flask yang sesuai, sementara `method="post"` memastikan data dikirim secara aman dalam body request HTTP.
 
-10. Dropdown Kecamatan (Dinamis)
-<select name="kecamatan"> menampilkan daftar kecamatan menggunakan loop Jinja2 {% for item in kecamatan_list %}, sehingga opsi selalu sinkron dengan data dari backend dan tetap mempertahankan pilihan user.
+**8. Input Fitur Numerik**
+Terdapat empat *field* input bertipe number (`<input type="number">`) untuk variabel independen numerik:
+* Jumlah Kamar Tidur
+* Jumlah Kamar Mandi
+* Luas Tanah ($m^2$)
+* Luas Bangunan ($m^2$)
 
-11. Tombol Submit
-<button type="submit">Prediksi</button> digunakan untuk mengirim form, dengan styling biru navy dan teks kuning pastel serta efek hover untuk meningkatkan pengalaman pengguna.
+**9. Atribut Validasi & Sticky Form**
+Seluruh *field* input dilengkapi dengan atribut:
+* `required`: Memaksa pengguna mengisi data sebelum submit.
+* `placeholder`: Memberikan petunjuk pengisian.
+* `value="{{ ... }}"`: Menerapkan konsep *Sticky Form* menggunakan Jinja2, di mana data yang sebelumnya diinput pengguna akan muncul kembali jika terjadi error atau setelah reload, sehingga pengguna tidak perlu mengetik ulang.
 
-12. Blok Hasil Prediksi (Jinja2)
-{% if range_harga %} memastikan hasil hanya ditampilkan setelah proses prediksi berhasil dilakukan oleh backend.
+**10. Dropdown Kecamatan (Dinamis)**
+Elemen `<select name="kecamatan">` digunakan untuk memilih lokasi. Pilihan kecamatan (`<option>`) di-generate secara dinamis menggunakan perulangan Jinja2 `{% for item in kecamatan_list %}`. Hal ini memastikan pilihan di frontend selalu sinkron dengan daftar kecamatan yang didefinisikan di backend (`app.py`).
 
-13. Detail Input Pengguna
-Menampilkan kembali data yang dimasukkan pengguna (jumlah kamar, luas tanah, luas bangunan, dan lokasi) agar hasil prediksi lebih mudah dipahami.
+**11. Tombol Submit**
+Elemen `<button type="submit">` berfungsi untuk mengirimkan formulir. Tombol ini didesain dengan warna biru navy yang kontras dengan teks kuning, serta dilengkapi efek transisi warna saat kursor diarahkan (*hover*) untuk meningkatkan pengalaman pengguna (*User Experience*).
 
-14. Output Prediksi Harga
-Menampilkan:
-Prediksi harga tengah ({{ prediksi_tengah }})
-Rentang estimasi harga ({{ range_harga }})
+**12. Logika Penampilan Hasil**
+Blok Jinja2 `{% if range_harga %}` memastikan bahwa bagian hasil prediksi hanya akan dirender/ditampilkan oleh browser jika proses prediksi di backend telah berhasil dan variabel `range_harga` tersedia.
+
+**13. Rekap Input Pengguna**
+Di dalam blok hasil, aplikasi menampilkan kembali data spesifikasi rumah (kamar, luas, lokasi) yang dimasukkan pengguna. Ini berfungsi sebagai verifikasi visual agar pengguna yakin bahwa prediksi didasarkan pada data yang benar.
+
+**14. Output Prediksi Harga**
+Bagian akhir menampilkan hasil perhitungan model dalam format Rupiah:
+* **Prediksi Harga Tengah**: Nilai eksak hasil model regresi (`{{ prediksi_tengah }}`).
+* **Rentang Estimasi Harga**: Nilai prediksi $\pm$ MAE (`{{ range_harga }}`), memberikan gambaran harga yang lebih realistis dan akuntabel.
 
 ```py
 // app.py
