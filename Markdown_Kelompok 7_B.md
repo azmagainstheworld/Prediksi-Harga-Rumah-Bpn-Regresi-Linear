@@ -10,6 +10,7 @@ Proyek ini membangun sistem prediksi harga rumah di Balikpapan menggunakan Regre
 Tahapan utama proyek meliputi pembersihan data harga (konversi satuan Juta/Miliar menjadi IDR numerik), pembersihan atribut lokasi, penyaringan nilai hilang, serta penghapusan outlier menggunakan metode IQR dan batas manual. Model dilatih menggunakan LinearRegression dan dilakukan penyetelan sederhana menggunakan GridSearchCV. Model terbaik disimpan dalam format pickle` dan diintegrasikan ke aplikasi web menggunakan Flask agar pengguna dapat memasukkan data rumah dan memperoleh estimasi harga beserta rentang prediksi sederhana berbasis deviasi residual.
 
 ## Methods
+
 ### Regresi Linear
 
 Regresi Linear adalah metode statistik dan machine learning yang digunakan untuk memodelkan hubungan antara satu variabel dependen (target) dengan satu atau lebih variabel independen (fitur) melalui hubungan linier. Tujuan utama regresi linear adalah menemukan persamaan matematis yang paling sesuai untuk merepresentasikan hubungan tersebut sehingga dapat digunakan untuk melakukan prediksi pada data baru.
@@ -18,18 +19,21 @@ Dalam penelitian ini, regresi linear digunakan untuk memprediksi **harga rumah d
 
 Secara matematis, regresi linear multivariat dirumuskan sebagai:
 
-\[
-y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon
-\]
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon$$
 
-dengan:
-- \( y \) : variabel target (harga rumah)
-- \( x_1, x_2, \dots, x_n \) : variabel fitur
-- \( \beta_0 \) : intercept (bias)
-- \( \beta_1, \dots, \beta_n \) : koefisien regresi
-- \( \varepsilon \) : error term (residual)
 
-Setiap koefisien \( \beta_i \) merepresentasikan perubahan rata-rata pada harga rumah akibat perubahan satu satuan pada fitur \( x_i \), dengan asumsi fitur lainnya konstan.
+
+[Image of simple linear regression diagram]
+
+
+**Keterangan:**
+* $y$ : variabel target (harga rumah)
+* $x_1, x_2, \dots, x_n$ : variabel fitur
+* $\beta_0$ : intercept (bias)
+* $\beta_1, \dots, \beta_n$ : koefisien regresi
+* $\varepsilon$ : error term (residual)
+
+Setiap koefisien $\beta_i$ merepresentasikan perubahan rata-rata pada harga rumah akibat perubahan satu satuan pada fitur $x_i$, dengan asumsi fitur lainnya konstan.
 
 ---
 
@@ -38,18 +42,13 @@ Setiap koefisien \( \beta_i \) merepresentasikan perubahan rata-rata pada harga 
 Dataset dibaca dari berkas `data_final_bersih.csv` menggunakan pustaka **pandas**. Dataset terdiri dari **309 observasi** dan **10 kolom**, yang meliputi:
 
 - **Fitur numerik**:
-  - Luas Tanah (m²)
-  - Luas Bangunan (m²)
+  - Luas Tanah ($m^2$)
+  - Luas Bangunan ($m^2$)
   - Jumlah Kamar Tidur
   - Jumlah Kamar Mandi
 
-- **Fitur kategorikal lokasi** yang direpresentasikan menggunakan **One-Hot Encoding (OHE)**:
-  - Balikpapan Barat
-  - Balikpapan Kota
-  - Balikpapan Selatan
-  - Balikpapan Tengah
-  - Balikpapan Timur
-  - Balikpapan Utara
+- **Fitur kategorikal lokasi** (One-Hot Encoding):
+  - Balikpapan Barat, Kota, Selatan, Tengah, Timur, dan Utara.
 
 Variabel target pada penelitian ini adalah **Harga (IDR)**.
 
@@ -60,24 +59,12 @@ Variabel target pada penelitian ini adalah **Harga (IDR)**.
 Sebagai baseline, dibangun model regresi linear menggunakan fitur asli tanpa transformasi target maupun feature engineering tambahan.
 
 #### 2.1 Data Splitting
-
-Dataset dibagi menjadi:
-- **80% data latih (training set)**
-- **20% data uji (testing set)**
-
-dengan parameter:
-- `test_size = 0.2`
-- `random_state = 42`
-
-Pembagian ini dilakukan untuk memastikan hasil eksperimen dapat direproduksi.
+Dataset dibagi menjadi **80% data latih** dan **20% data uji** dengan `random_state = 42` untuk konsistensi hasil.
 
 #### 2.2 Evaluasi Baseline
+Model baseline dievaluasi menggunakan koefisien determinasi ($R^2$):
 
-Model baseline dievaluasi menggunakan koefisien determinasi (\( R^2 \)) dan menghasilkan:
-
-\[
-R^2 = 0.507
-\]
+$$R^2 = 0.507$$
 
 Nilai ini menunjukkan bahwa sekitar **50.7% variasi harga rumah** dapat dijelaskan oleh model regresi linear dasar.
 
@@ -85,106 +72,55 @@ Nilai ini menunjukkan bahwa sekitar **50.7% variasi harga rumah** dapat dijelask
 
 ### 3. Transformasi Variabel Target (Log Transform)
 
-Distribusi harga rumah umumnya bersifat **right-skewed** dan mengandung nilai ekstrem (*outlier*). Untuk mengatasi hal tersebut, dilakukan transformasi logaritmik pada variabel target.
+Distribusi harga rumah umumnya bersifat **right-skewed**. Untuk memperbaiki performa model dan mengurangi efek outlier, dilakukan transformasi logaritmik:
 
-Transformasi logaritmik didefinisikan sebagai:
+$$y_{\text{log}} = \ln(y)$$
 
-\[
-y_{\text{log}} = \ln(y)
-\]
+Persamaan model menjadi:
 
-dengan:
-- \( y \) : harga rumah dalam Rupiah
-- \( y_{\text{log}} \) : harga rumah pada skala logaritmik
+$$\ln(y) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon$$
 
-Model regresi linear kemudian dilatih menggunakan target \( y_{\text{log}} \), sehingga persamaan model menjadi:
 
-\[
-\ln(y) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon
-\]
 
-Pendekatan ini memungkinkan hubungan antara fitur dan harga menjadi lebih linear serta mengurangi pengaruh outlier.
+Evaluasi model dengan log transform menghasilkan peningkatan akurasi:
 
-Evaluasi model dengan log transform menghasilkan:
-
-\[
-R^2 = 0.517
-\]
+$$R^2 = 0.517$$
 
 ---
 
 ### 4. Feature Engineering dan Model Akhir
 
-Untuk meningkatkan performa model, dilakukan penambahan fitur turunan yang relevan secara domain properti.
+Dilakukan penambahan fitur turunan untuk meningkatkan korelasi antar variabel.
 
 #### 4.1 Fitur Turunan
-
-1. **Harga per meter persegi tanah (`harga_per_m2_tanah`)**
-
-   \[
-   \text{harga\_per\_m2\_tanah} = \frac{\text{Harga}}{\text{Luas Tanah}}
-   \]
-
-   Fitur ini digunakan pada tahap eksplorasi feature engineering, namun tidak digunakan sebagai fitur input akhir karena secara langsung bergantung pada variabel target.
-
-2. **Rasio luas bangunan terhadap luas tanah (`rasio_lb_lt`)**
-
-   \[
-   \text{rasio\_lb\_lt} = \frac{\text{Luas Bangunan (m}^2\text{)}}{\text{Luas Tanah (m}^2\text{)}}
-   \]
-
-   Fitur ini merepresentasikan tingkat pemanfaatan lahan dan merupakan indikator penting dalam penilaian harga properti.
+1. **Rasio luas bangunan terhadap luas tanah (`rasio_lb_lt`)**:
+   $$\text{rasio\_lb\_lt} = \frac{\text{Luas Bangunan}}{\text{Luas Tanah}}$$
 
 #### 4.2 Model Akhir
+Model akhir dilatih menggunakan fitur numerik, fitur lokasi (OHE), dan fitur `rasio_lb_lt` dengan target logaritmik. Hasilnya menunjukkan peningkatan signifikan:
 
-Model akhir dilatih menggunakan:
-- Fitur numerik asli
-- Fitur lokasi (One-Hot Encoding)
-- Fitur turunan `rasio_lb_lt`
-
-dengan variabel target yang telah ditransformasikan secara logaritmik (\( y_{\text{log}} \)).
-
-Evaluasi model akhir menunjukkan peningkatan performa yang signifikan:
-
-\[
-R^2 = 0.677
-\]
+$$R^2 = 0.677$$
 
 ---
 
 ### 5. Evaluasi pada Skala Harga Asli
 
-Agar hasil prediksi dapat diinterpretasikan dalam satuan Rupiah, nilai prediksi pada skala log dikembalikan ke skala asli menggunakan fungsi eksponensial:
+Nilai prediksi dikembalikan ke skala asli (Rupiah) menggunakan fungsi eksponensial:
 
-\[
-\hat{y} = e^{\hat{y}_{\text{log}}}
-\]
+$$\hat{y} = e^{\hat{y}_{\text{log}}}$$
 
 #### 5.1 Mean Absolute Error (MAE)
-
-\[
-\text{MAE} = \frac{1}{m} \sum_{i=1}^{m} \left| y_{\text{true},i} - y_{\text{pred},i} \right|
-\]
-
-\[
-\text{MAE} = 473{,}813{,}412 \text{ IDR}
-\]
+$$\text{MAE} = \frac{1}{m} \sum_{i=1}^{m} | y_{\text{true},i} - y_{\text{pred},i} |$$
+$$\text{MAE} = 473,813,412 \text{ IDR}$$
 
 #### 5.2 Root Mean Squared Error (RMSE)
-
-\[
-\text{RMSE} = \sqrt{ \frac{1}{m} \sum_{i=1}^{m} \left( y_{\text{true},i} - y_{\text{pred},i} \right)^2 }
-\]
-
-\[
-\text{RMSE} = 917{,}210{,}564 \text{ IDR}
-\]
+$$\text{RMSE} = \sqrt{ \frac{1}{m} \sum_{i=1}^{m} ( y_{\text{true},i} - y_{\text{pred},i} )^2 }$$
+$$\text{RMSE} = 917,210,564 \text{ IDR}$$
 
 ---
 
 ### 6. Model Persistence
-
-Sebagai tahap akhir, model regresi linear yang telah dilatih (`final_model`) serta daftar kolom fitur yang digunakan (`kolom_fitur`) disimpan menggunakan pustaka **joblib**. Penyimpanan ini memungkinkan model digunakan kembali untuk proses inferensi maupun deployment tanpa perlu melakukan training ulang.
+Model final disimpan menggunakan `joblib` dalam file `final_model.pkl` agar dapat digunakan langsung untuk proses deployment tanpa training ulang.
 
 ## Struktur Project
 
