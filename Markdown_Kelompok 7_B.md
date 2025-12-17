@@ -22,16 +22,12 @@ Secara matematis, regresi linear multivariat dirumuskan sebagai:
 $$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon$$
 
 
-
-[Image of simple linear regression diagram]
-
-
 **Keterangan:**
-* $y$ : variabel target (harga rumah)
-* $x_1, x_2, \dots, x_n$ : variabel fitur
-* $\beta_0$ : intercept (bias)
-* $\beta_1, \dots, \beta_n$ : koefisien regresi
-* $\varepsilon$ : error term (residual)
+* $y$: variabel target (harga rumah)
+* $x_1, x_2, \dots, x_n$: variabel fitur
+* $\beta_0$: intercept (bias)
+* $\beta_1, \dots, \beta_n$: koefisien regresi
+* $\varepsilon$: error term (residual)
 
 Setiap koefisien $\beta_i$ merepresentasikan perubahan rata-rata pada harga rumah akibat perubahan satu satuan pada fitur $x_i$, dengan asumsi fitur lainnya konstan.
 
@@ -81,7 +77,6 @@ Persamaan model menjadi:
 $$\ln(y) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_n x_n + \varepsilon$$
 
 
-
 Evaluasi model dengan log transform menghasilkan peningkatan akurasi:
 
 $$R^2 = 0.517$$
@@ -94,7 +89,8 @@ Dilakukan penambahan fitur turunan untuk meningkatkan korelasi antar variabel.
 
 #### 4.1 Fitur Turunan
 1. **Rasio luas bangunan terhadap luas tanah (`rasio_lb_lt`)**:
-   $$\text{rasio\_lb\_lt} = \frac{\text{Luas Bangunan}}{\text{Luas Tanah}}$$
+
+   $$\text{rasioLBLT} = \frac{\text{Luas Bangunan}}{\text{Luas Tanah}}$$
 
 #### 4.2 Model Akhir
 Model akhir dilatih menggunakan fitur numerik, fitur lokasi (OHE), dan fitur `rasio_lb_lt` dengan target logaritmik. Hasilnya menunjukkan peningkatan signifikan:
