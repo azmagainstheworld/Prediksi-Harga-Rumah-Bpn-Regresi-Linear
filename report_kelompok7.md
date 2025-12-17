@@ -1424,7 +1424,7 @@ Cell 14: Baris kolom_fitur = X_train.columns.tolist() mengambil daftar nama kolo
 Penjelasan:
 Cell 15: Fungsi joblib.dump() digunakan dua kali: pertama, untuk menyimpan objek model yang telah dilatih (final\_model) ke dalam file model_regresi_linear_harg_rumah.pkl; dan kedua, untuk menyimpan daftar terurut dari 12 nama kolom fitur (kolom\_fitur) ke dalam file kolom_fitur_model.pkl
 
-````html
+```html
    // templates/index.html
 
  1 <!DOCTYPE html>
@@ -1572,7 +1572,6 @@ Cell 15: Fungsi joblib.dump() digunakan dua kali: pertama, untuk menyimpan objek
 143 
 144 </body>
 145 </html>
-
 ```
 
 Penjelasan:
@@ -1628,9 +1627,8 @@ Menampilkan:
 Prediksi harga tengah ({{ prediksi_tengah }})
 Rentang estimasi harga ({{ range_harga }})
 
-```python
+```py
 // app.py
-
  1 | import pandas as pd
  2 | import numpy as np 
  3 | import joblib 
@@ -1803,103 +1801,93 @@ Rentang estimasi harga ({{ range_harga }})
 
 ```
 
-Penjelasan:
-1. Import library
-Mengimpor pandas untuk membuat dan mengelola DataFrame fitur, numpy untuk operasi numerik (khususnya konversi dari log ke nilai asli), joblib untuk memuat model machine learning, serta Flask (Flask, render_template, request) untuk membangun aplikasi web dan menangani input dari form pengguna.
+## Penjelasan Teknis Aplikasi (`app.py`)
 
-2. Konstanta hasil pelatihan model (MAE)
-Variabel MAE_FINAL menyimpan nilai Mean Absolute Error (MAE) dari hasil evaluasi model saat training. Nilai ini digunakan untuk membentuk rentang estimasi harga (prediksi ± MAE), sehingga output tidak hanya satu angka tunggal.
+Berikut adalah rincian alur kerja kode program utama:
 
-3. Definisi kolom fitur (FEATURE_COLUMNS)
-List FEATURE_COLUMNS berisi 12 nama fitur yang digunakan oleh model saat training, termasuk:
-Fitur numerik (luas tanah, luas bangunan, jumlah kamar)
-Fitur kategori hasil one-hot encoding kecamatan
-Fitur hasil feature engineering (harga_per_m2_tanah, rasio_lb_lt)
-Daftar ini memastikan urutan dan nama kolom input saat prediksi identik dengan data training.
+**1. Import Library**
+Mengimpor `pandas` untuk membuat dan mengelola DataFrame fitur, `numpy` untuk operasi numerik (khususnya konversi dari log ke nilai asli), `joblib` untuk memuat model machine learning, serta `Flask` (Flask, render_template, request) untuk membangun aplikasi web dan menangani input dari form pengguna.
 
-4. Penentuan jalur file model dan kolom fitur
-Variabel MODEL_PATH dan COLUMNS_PATH menyimpan lokasi file model regresi linear dan file kolom fitur hasil training agar dapat dimuat kembali saat aplikasi dijalankan.
+**2. Konstanta Hasil Pelatihan Model (MAE)**
+Variabel `MAE_FINAL` menyimpan nilai *Mean Absolute Error* (MAE) dari hasil evaluasi model saat training. Nilai ini digunakan untuk membentuk rentang estimasi harga (prediksi ± MAE), sehingga output tidak hanya satu angka tunggal.
 
-5. Load model machine learning
-Model regresi linear dimuat menggunakan joblib.load.
-Blok try-except digunakan untuk:
-Menangani error jika file tidak ditemukan
-Menangani error perbedaan versi library (misalnya scikit-learn)
-Menghentikan aplikasi jika model gagal dimuat
+**3. Definisi Kolom Fitur (`FEATURE_COLUMNS`)**
+List `FEATURE_COLUMNS` berisi 12 nama fitur yang digunakan oleh model saat training, yang meliputi fitur numerik (luas tanah, luas bangunan, jumlah kamar), fitur kategori hasil *one-hot encoding* kecamatan, dan fitur hasil *feature engineering* (`harga_per_m2_tanah`, `rasio_lb_lt`). Daftar ini memastikan urutan dan nama kolom input saat prediksi identik dengan data training.
 
-6. Load kolom fitur dari file training
-File kolom_fitur_model.pkl dimuat untuk memastikan nama dan jumlah kolom fitur sama dengan saat training. Jika jumlah kolom tidak sesuai (bukan 12), sistem akan menampilkan peringatan dan menggunakan daftar fitur hardcoded sebagai cadangan.
+**4. Penentuan Jalur File Model dan Kolom Fitur**
+Variabel `MODEL_PATH` dan `COLUMNS_PATH` menyimpan lokasi file model regresi linear dan file kolom fitur hasil training agar dapat dimuat kembali saat aplikasi dijalankan.
 
-7. Inisialisasi aplikasi Flask
-app = Flask(__name__) digunakan untuk membuat instance aplikasi Flask yang akan menangani seluruh request HTTP.
+**5. Load Model Machine Learning**
+Model regresi linear dimuat menggunakan `joblib.load`. Blok `try-except` digunakan untuk menangani error jika file tidak ditemukan atau terjadi perbedaan versi library, serta menghentikan aplikasi jika model gagal dimuat.
 
-8. Daftar kecamatan
-kecamatan_list berisi daftar kecamatan yang digunakan untuk:
-Mengisi dropdown pada form HTML
-Menentukan kolom one-hot encoding saat preprocessing input user
+**6. Load Kolom Fitur dari File Training**
+File `kolom_fitur_model.pkl` dimuat untuk memastikan nama dan jumlah kolom fitur sama dengan saat training. Jika jumlah kolom tidak sesuai (bukan 12), sistem akan menampilkan peringatan.
 
-9. Fungsi create_input_dataframe_final_model()
-Fungsi ini bertugas menyiapkan data input user agar sesuai dengan format model, meliputi:
-Menyusun fitur dasar (luas, kamar)
-Membuat fitur turunan rasio_lb_lt
-Mengisi harga_per_m2_tanah dengan nilai 0 (karena hanya digunakan saat training)
-Melakukan one-hot encoding kecamatan
-Mengembalikan DataFrame dengan urutan kolom sesuai FEATURE_COLUMNS
+**7. Inisialisasi Aplikasi Flask**
+`app = Flask(__name__)` digunakan untuk membuat instance aplikasi Flask yang akan menangani seluruh request HTTP.
 
-10. Route "/" (index)
-Endpoint utama aplikasi yang merender halaman index.html.
-Halaman ini menampilkan form input data rumah dan dropdown kecamatan.
+**8. Daftar Kecamatan**
+`kecamatan_list` berisi daftar kecamatan yang digunakan untuk mengisi *dropdown* pada form HTML dan menentukan kolom *one-hot encoding* saat preprocessing input user.
 
-11. Route "/predict" (POST)
-Endpoint untuk menangani proses prediksi.
-Data input diambil dari request.form, lalu dikonversi ke tipe numerik (int dan float).
+**9. Fungsi `create_input_dataframe_final_model()`**
+Fungsi ini bertugas menyiapkan data input user agar sesuai dengan format model, meliputi: menyusun fitur dasar, membuat fitur turunan `rasio_lb_lt`, mengisi `harga_per_m2_tanah` dengan nilai 0 (dummy), melakukan *one-hot encoding* kecamatan, dan mengembalikan DataFrame yang urutannya sesuai `FEATURE_COLUMNS`.
 
-12. Validasi input pengguna
-Sistem memeriksa apakah nilai input masih berada dalam rentang wajar sesuai data training.
-Jika tidak valid, aplikasi akan menampilkan pesan error tanpa menjalankan prediksi.
+**10. Route "/" (Index)**
+Endpoint utama aplikasi yang merender halaman `index.html`. Halaman ini menampilkan form input data rumah dan dropdown kecamatan.
 
-13. Penyusunan fitur & preprocessing
-Data input yang valid diproses menggunakan fungsi create_input_dataframe_final_model() untuk menghasilkan DataFrame fitur yang siap diprediksi oleh model.
+**11. Route "/predict" (POST)**
+Endpoint untuk menangani proses prediksi. Data input diambil dari `request.form`, lalu dikonversi ke tipe numerik (int dan float).
 
-14. Prediksi harga menggunakan model
-Model menghasilkan prediksi dalam bentuk log harga (ln(harga)), kemudian dikonversi kembali ke skala harga asli (Rupiah) menggunakan fungsi np.exp().
+**12. Validasi Input Pengguna**
+Sistem memeriksa apakah nilai input masih berada dalam rentang wajar sesuai data training. Jika tidak valid, aplikasi menampilkan pesan error tanpa menjalankan prediksi.
 
-15. Perhitungan rentang harga menggunakan MAE
-Rentang estimasi harga dihitung sebagai:
-Batas bawah = prediksi − MAE
-Batas atas = prediksi + MAE
-Nilai bawah dibatasi minimal 0 untuk menghindari harga negatif.
+**13. Penyusunan Fitur & Preprocessing**
+Data input yang valid diproses menggunakan fungsi `create_input_dataframe_final_model()` untuk menghasilkan DataFrame fitur yang siap diprediksi.
 
-16. Formatting hasil prediksi
-Nilai prediksi tengah dan rentang harga diformat ke dalam format Rupiah agar mudah dibaca oleh pengguna.
+**14. Prediksi Harga Menggunakan Model**
+Model menghasilkan prediksi dalam bentuk log harga (`ln(harga)`), kemudian dikonversi kembali ke skala harga asli (Rupiah) menggunakan fungsi `np.exp()`.
 
-17. Render hasil ke template
-Aplikasi mengembalikan halaman index.html dengan membawa:
-Detail input user
-Nilai prediksi tengah
-Rentang estimasi harga
-sehingga hasil prediksi langsung ditampilkan di halaman yang sama.
+**15. Perhitungan Rentang Harga Menggunakan MAE**
+Rentang estimasi harga dihitung sebagai `Batas bawah = prediksi − MAE` dan `Batas atas = prediksi + MAE`. Nilai bawah dibatasi minimal 0 untuk menghindari harga negatif.
 
-18. Menjalankan server Flask
-app.run(debug=True) digunakan untuk menjalankan aplikasi dalam mode debug, sehingga memudahkan proses pengembangan dan pelacakan error.
+**16. Formatting Hasil Prediksi**
+Nilai prediksi tengah dan rentang harga diformat ke dalam format mata uang Rupiah agar mudah dibaca oleh pengguna.
 
-## Demo
+**17. Render Hasil ke Template**
+Aplikasi mengembalikan halaman `index.html` dengan membawa detail input user, nilai prediksi tengah, dan rentang estimasi harga sehingga hasil langsung ditampilkan di halaman yang sama.
 
+**18. Menjalankan Server Flask**
+`app.run(debug=True)` digunakan untuk menjalankan aplikasi dalam mode debug untuk memudahkan pengembangan.
 
+---
+
+## Demo Aplikasi
+
+Berikut adalah demonstrasi penggunaan aplikasi prediksi harga rumah:
+
+<div align="center">
+  <img src="Demo.gif" alt="Demo Aplikasi" width="800">
+</div>
+
+---
 
 ## Summary
 
-Proyek ini menggunakan metodologi yang berfokus pada optimasi Regresi Linier untuk memprediksi harga rumah, sebuah pendekatan yang krusial karena sifat data harga yang cenderung non-linear. Tahap pelatihan dimulai dengan menyiapkan dataset final yang terdiri dari 309 baris data bersih. Untuk meningkatkan kinerja model, kami menerapkan strategi kunci: pertama, variabel target (`Harga (IDR)`) diubah skalanya menggunakan Logaritma Natural (ln) untuk menstabilkan varians dan meningkatkan linearitas. Kedua, penerapan Feature Engineering dengan menciptakan fitur kontekstual seperti rasio_lb_lt. Kombinasi optimasi ini berhasil meningkatkan akurasi model secara signifikan, yang dibuktikan dengan R2 Score Final 0.677. Setelah model dilatih, metrik kinerjanya dihitung kembali ke skala Rupiah asli, menetapkan nilai Mean Absolute Error (MAE) sebesar Rp473.813.412. Model yang telah dilatih (`final\_model`) dan daftar 12 kolom fitur yang telah terurut, lalu disimpan menggunakan `joblib.dump()` untuk menjamin aset model siap untuk tahap deployment.
+Proyek ini menerapkan metode **Regresi Linear** yang dioptimalkan untuk memprediksi harga rumah di Kota Balikpapan. Pendekatan ini dipilih untuk menangani karakteristik data harga properti yang cenderung memiliki variansi tinggi dan distribusi *skewed*.
 
-Proses prediksi dilakukan dengan memasukkan input yang sudah di-feature engineering ke model, menghasilkan output logaritmik, yang kemudian diubah kembali ke Rupiah menggunakan np.exp(). Hasil akhirnya disajikan kepada pengguna sebagai Rentang Harga Prediksi yang dihitung berdasarkan MAE model, yaitu Harga Prediksi sekitar Rp 473.813.412, memberikan estimasi yang realistis dan terukur kepada pengguna.
+Proses pengembangan model melibatkan beberapa tahapan strategis:
+1.  **Data Preparation**: Menggunakan dataset bersih sebanyak 309 observasi.
+2.  **Transformasi Data**: Variabel target (`Harga`) diubah menggunakan **Logaritma Natural (ln)** untuk menstabilkan varians dan mendekatkan distribusi data ke bentuk normal.
+3.  **Feature Engineering**: Menciptakan fitur baru yang relevan secara kontekstual, yaitu rasio luas bangunan terhadap luas tanah (`rasioLBLT`).
+
+**Hasil Evaluasi:**
+Kombinasi strategi di atas berhasil meningkatkan performa model secara signifikan dengan **R² Score Final sebesar 0.677**. Setelah dikembalikan ke skala harga asli (Rupiah), model memiliki tingkat kesalahan rata-rata atau **Mean Absolute Error (MAE)** sebesar **Rp 473.813.412**.
+
+**Implementasi & Deployment:**
+Model yang telah dilatih (`final_model.pkl`) beserta urutan fitur disimpan menggunakan `joblib` untuk memastikan konsistensi saat deployment. Pada antarmuka pengguna, hasil prediksi tidak hanya menampilkan satu angka tunggal, melainkan disajikan sebagai **Rentang Estimasi Harga** (Nilai Prediksi ± MAE). Hal ini memberikan gambaran yang lebih realistis dan akuntabel kepada pengguna terkait potensi variasi harga di pasar.
 
 ## References
 
-A. Vermaysha dan Nurmalitasari, "Prediksi Harga Rumah di Kabupaten Karanganyar Menggunakan Metode Regresi Linear," dalam Prosiding Seminar Nasional Teknologi Informasi dan Bisnis (SENATIB), Surakarta, hlm. 6–1, Jul. 2023.
-
-N. Nuris, "Analisis Prediksi Harga Rumah Pada Machine Learning Menggunakan Metode Regresi Linear," Explore: Jurnal Sistem Informasi dan Telematika, vol. 14, no. 2, hlm. 108–112, Jul. 2024.
-
-R. R. Hallan dan I. N. Fajri, "Prediksi Harga Rumah menggunakan Machine Learning Algoritma Regresi Linier," Jurnal Teknologi Dan Sistem Informasi Bisnis, vol. 7, no. 1, hlm. 57-62, Jan. 2025.
-
-
-
+1. A. Vermaysha dan Nurmalitasari, "Prediksi Harga Rumah di Kabupaten Karanganyar Menggunakan Metode Regresi Linear," dalam *Prosiding Seminar Nasional Teknologi Informasi dan Bisnis (SENATIB)*, Surakarta, hlm. 6–1, Jul. 2023.
+2. N. Nuris, "Analisis Prediksi Harga Rumah Pada Machine Learning Menggunakan Metode Regresi Linear," *Explore: Jurnal Sistem Informasi dan Telematika*, vol. 14, no. 2, hlm. 108–112, Jul. 2024.
+3. R. R. Hallan dan I. N. Fajri, "Prediksi Harga Rumah menggunakan Machine Learning Algoritma Regresi Linier," *Jurnal Teknologi Dan Sistem Informasi Bisnis*, vol. 7, no. 1, hlm. 57-62, Jan. 2025.
